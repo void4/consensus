@@ -32,12 +32,33 @@ sublist = []
 everysec = Every(1)
 every5sec = Every(5)
 
+consdata = randint(0, 255)
+
+def connect(path):
+	sub.connect(path)
+	sublist.append(path)
+
 while True:
 
 	try:
 		if sublist:
-			msg = sub.recv_string(zmq.NOBLOCK)
-			print("recv", msg)
+			msg = sub.recv_json(zmq.NOBLOCK)
+			#print("recv", msg)
+			typ = msg["type"]
+			data = msg["data"]
+
+			if typ == "chat":
+				print(data)
+			elif typ == "peers":
+				for peer in data:
+					if peer not in sublist:
+						connect(peer)
+			elif typ == "data":
+				consdata = (consdata + data)/2
+				print(consdata)
+			else:
+				print(msg)
+
 	except zmq.error.Again as e:
 		pass
 	except zmq.ZMQError as e:
@@ -45,10 +66,14 @@ while True:
 		pass
 
 	if every5sec:
-		pub.send_string("test")
+		pub.send_json({"type":"chat", "data":"test"})
 		print("Sent.")
 
 	if everysec:
+		pub.send_json({"type":"peers", "data":sublist})
+
+		pub.send_json({"type":"data", "data":consdata})
+
 		blip(txpath)
 
 		msg = reip(0.5)
@@ -57,6 +82,5 @@ while True:
 			txp = msg#msg.split("\t")
 			if txp != txpath and txp not in sublist:#rxp != rxpath and
 				print("FOUND NEW PEER")
-				sublist.append(txp)
-				sub.connect(txp)
+				connect(txp)
 				print("Connected to", txp)
