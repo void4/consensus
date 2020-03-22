@@ -1,4 +1,4 @@
-from random import randint
+from random import randint, random
 
 import zmq
 
@@ -76,7 +76,7 @@ while True:
 
 		blip(txpath)
 
-		msg = reip(0.5)
+		msg = reip(0.5+random())
 
 		if msg is not None:
 			txp = msg#msg.split("\t")
