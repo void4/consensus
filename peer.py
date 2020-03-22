@@ -66,8 +66,8 @@ while True:
 		pass
 
 	if every5sec:
-		pub.send_json({"type":"chat", "data":"test"})
-		print("Sent.")
+		pub.send_json({"type":"chat", "data":"ping"})
+		print("Sent ping.")
 
 	if everysec:
 		pub.send_json({"type":"peers", "data":sublist})
