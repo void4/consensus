@@ -1,10 +1,29 @@
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, utils
 from cryptography.exceptions import InvalidSignature
 
 chosen_hash = hashes.SHA256()
 ecdsa_prehash = ec.ECDSA(utils.Prehashed(chosen_hash))
+
+def save_pem_public(public_key):
+    return public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+
+def save_pem_private(private_key):
+    return private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+
+def load_pem_public(pem):
+    return serialization.load_pem_public_key(pem, backend=default_backend())
+
+def load_pem_private(pem, password=None):
+    return serialization.load_pem_private_key(pem, password=password, backend=default_backend())
 
 def hash(data):
     hasher = hashes.Hash(chosen_hash, default_backend())
@@ -41,3 +60,6 @@ if __name__ == "__main__":
     print(public_key)
 
     print(verify(public_key, signature, data))
+
+    print(save_pem_private(private_key))
+    print(save_pem_public(public_key))

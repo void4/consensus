@@ -7,6 +7,11 @@ from udpbroadcast.client import blip, local_ip
 
 from every import Every
 
+from crypto import generate_private_key, sign, verify
+
+private_key = generate_private_key()
+print("Private key generated.")
+
 ctx = zmq.Context()
 
 
