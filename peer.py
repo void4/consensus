@@ -83,6 +83,4 @@ while True:
 		msg = reip(0.5+random())
 
 		if msg is not None:
-			txp = msg#msg.split("\t")
-			print(txp, txpath, txp!=txpath)
-			connect(txp)
+			connect(msg)
