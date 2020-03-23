@@ -35,8 +35,11 @@ every5sec = Every(5)
 consdata = randint(0, 255)
 
 def connect(path):
-	sub.connect(path)
-	peerlist.append(path)
+	if path != txpath and path not in peerlist:
+		sub.connect(path)
+		peerlist.append(path)
+		print("FOUND NEW PEER")
+		print("Connected to", path)
 
 while True:
 
@@ -51,8 +54,7 @@ while True:
 				print(data)
 			elif typ == "peers":
 				for peer in data:
-					if peer not in peerlist:
-						connect(peer)
+					connect(peer)
 			elif typ == "data":
 				consdata = (consdata + data)/2
 				print(consdata)
@@ -69,6 +71,7 @@ while True:
 		pub.send_json({"type":"chat", "data":"ping"})
 		print("Sent ping.")
 		print(f"Have {len(peerlist)} peers.")
+		print(peerlist)
 
 	if everysec:
 		pub.send_json({"type":"peers", "data":peerlist})
@@ -81,7 +84,5 @@ while True:
 
 		if msg is not None:
 			txp = msg#msg.split("\t")
-			if txp != txpath and txp not in peerlist:#rxp != rxpath and
-				print("FOUND NEW PEER")
-				connect(txp)
-				print("Connected to", txp)
+			print(txp, txpath, txp!=txpath)
+			connect(txp)
