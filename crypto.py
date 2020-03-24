@@ -10,14 +10,14 @@ def public2pem(public_key):
     return public_key.public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
-    )
+    ).strip()
 
 def private2pem(private_key):
     return private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption()
-    )
+    ).strip()
 
 def pem2public(pem):
     return serialization.load_pem_public_key(pem, backend=default_backend())
@@ -30,7 +30,6 @@ def load_pem_keys(path):
         with open(path, "r") as pemfile:
             private_key = pem2private(pemfile.read().encode("utf8"))
             public_key = private_key.public_key()
-            print("Loaded key from", path)
             return (private_key, public_key)
     except FileNotFoundError:
         return None
@@ -38,7 +37,6 @@ def load_pem_keys(path):
 def save_pem_keys(path, private_key):
     with open(path, "w+") as pemfile:
         pemfile.write(private2pem(private_key).decode("utf8"))
-    print("Saved key to", path)
 
 def hash(data):
     hasher = hashes.Hash(chosen_hash, default_backend())

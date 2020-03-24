@@ -12,6 +12,7 @@ from udpbroadcast.client import blip, local_ip
 from every import Every
 
 from crypto import generate_keys, sign, verify, save_pem_keys, load_pem_keys, public2pem, pem2public
+from db import generate_random_tx, make_tx
 
 os.makedirs("keys", exist_ok=True)
 
@@ -28,10 +29,13 @@ if result:
 
 if global_private_key is None:
 	global_private_key, global_public_key = generate_keys()
+	print("Keypair generated.")
 	save_pem_keys(keypath, global_private_key)
+	print("Saved key to", keypath)
+else:
+	print("Loaded key from", keypath)
 
-print(public2pem(global_public_key))
-print("Keypair generated.")
+print(public2pem(global_public_key).decode("utf8"))
 
 ctx = zmq.Context()
 
@@ -85,15 +89,26 @@ while True:
 			elif typ == "data":
 				consdata = (consdata + data)/2
 				print(consdata)
-			elif typ == "info":
-				t = time()
-				public_key = pem2public(data["public_key"].encode("utf8"))
-				print(t, public_key)
+			#elif typ == "info":
+			#	t = time()
+			#	public_key = pem2public(data["public_key"].encode("utf8"))
+			#	print(t, public_key)
 			elif typ == "tx":
-				pubkey = pem2public(data["pubkey"].encode("utf8"))
+				print("Received tx")
+				pubkeypem = data["pubkey"].encode("utf8")
+				pubkey = pem2public(pubkeypem)
 				signature = b64decode(data["signature"])
 				datafield = data["data"].encode("utf8")
-				print("Verification: ", verify(pubkey, signature, datafield))
+				verified = verify(pubkey, signature, datafield)
+				print("Signature verified: ", verified)
+				if verified:
+					# watch padding, merkle tree like problem!
+					#metasignature = sign(global_private_key, b"\n".join([pubkeypem, data["signature"].encode("utf8"), datafield]))
+					targetpem, value = data["data"].split("\t")
+					value = int(value)
+					print("MAKETX:", make_tx(data["pubkey"], targetpem, value))
+
+
 			else:
 				print(msg)
 
@@ -104,12 +119,17 @@ while True:
 		pass
 
 	if every5sec:
+
 		pub.send_json({"type":"chat", "data":"ping"})
 		print("Sent ping.")
 		print(f"Have {len(peerlist)} peers.")
 		print(peerlist.keys())
-		pub.send_json({"type":"info", "data":{"public_key":public2pem(global_public_key).decode("utf8")}})
-		data = txpath
+
+		#pub.send_json({"type":"info", "data":{"public_key":public2pem(global_public_key).decode("utf8")}})
+
+
+		targetpem, value = generate_random_tx(public2pem(global_public_key).decode("utf8"))
+		data = targetpem + "\t" + str(value)
 		signature = sign(global_private_key, data.encode("utf8"))
 		signature = b64encode(signature).decode("utf8")
 		print(signature)
