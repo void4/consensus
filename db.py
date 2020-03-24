@@ -48,3 +48,7 @@ def make_tx(pemsource, pemtarget, value):
     db.update({"value": targetvalue+value}, targetquery)
 
     return True
+
+def dbprint():
+    for item in db.all():
+        print(item["pubkey"].split("\n")[-2][-8:], ":", item["value"])

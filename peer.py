@@ -12,7 +12,7 @@ from udpbroadcast.client import blip, local_ip
 from every import Every
 
 from crypto import generate_keys, sign, verify, save_pem_keys, load_pem_keys, public2pem, pem2public
-from db import generate_random_tx, make_tx
+from db import generate_random_tx, make_tx, dbprint
 
 os.makedirs("keys", exist_ok=True)
 
@@ -107,6 +107,7 @@ while True:
 					targetpem, value = data["data"].split("\t")
 					value = int(value)
 					print("MAKETX:", make_tx(data["pubkey"], targetpem, value))
+					dbprint()
 
 
 			else:
