@@ -49,12 +49,17 @@ def make_tx(pemsource, pemtarget, value):
     if value > sourcevalue:
         return "Insufficient funds"
 
-    targetvalue = db.search(targetquery)[0]["value"]
-
     print("TRANSFER", sourcevalue, targetvalue, value)
-
     db.update({"value": sourcevalue-value}, sourcequery)
-    db.update({"value": targetvalue+value}, targetquery)
+
+    targetvalue = db.search(targetquery)
+
+    if len(targetvalue) > 0:
+        db.update({"value": targetvalue[0]["value"]+value}, targetquery)
+    else:
+        db.insert({"pubkey": pemtarget, "value": value})
+
+
 
     return True
 
