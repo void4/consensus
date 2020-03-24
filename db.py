@@ -19,9 +19,6 @@ if len(db.all()) == 0:
 #db.purge()
 
 def generate_random_tx(pempubkey):
-    print(pempubkey)
-    for item in db.all():
-        print(item["pubkey"]==pempubkey, item["pubkey"], pempubkey)
     randomitem = choice(db.all())
     targetpem = randomitem["pubkey"]
     value = db.search(Query().pubkey==pempubkey)[0]["value"] // 2
