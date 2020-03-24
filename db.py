@@ -5,16 +5,22 @@ from tinydb import TinyDB, Query
 from genesis import zero
 
 #temporary file, multiple clients same directory!
-db = TinyDB("db.json")
+
+db = None
 
 def load_genesis():
     for pempubkey, value in zero.items():
         db.insert({"pubkey": pempubkey, "value": int(value)})
 
 
-if len(db.all()) == 0:
-    load_genesis()
-    print("Loaded genesis into db")
+
+def init_db(id):
+    global db
+    db = TinyDB(f"db-{id}.json")
+
+    if len(db.all()) == 0:
+        load_genesis()
+        print("Loaded genesis into db")
 
 #db.purge()
 
@@ -30,6 +36,10 @@ def make_tx(pemsource, pemtarget, value):
     if value < 0:
         return "Cannot send negative value"
 
+    # Need to be very careful here
+    if pemsource == pemtarget:
+        return "Can't send to oneself"
+
     #race condition?
     sourcequery = Query().pubkey==pemsource
     targetquery = Query().pubkey==pemtarget
@@ -40,6 +50,8 @@ def make_tx(pemsource, pemtarget, value):
         return "Insufficient funds"
 
     targetvalue = db.search(targetquery)[0]["value"]
+
+    print("TRANSFER", sourcevalue, targetvalue, value)
 
     db.update({"value": sourcevalue-value}, sourcequery)
     db.update({"value": targetvalue+value}, targetquery)

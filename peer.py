@@ -12,7 +12,7 @@ from udpbroadcast.client import blip, local_ip
 from every import Every
 
 from crypto import generate_keys, sign, verify, save_pem_keys, load_pem_keys, public2pem, pem2public
-from db import generate_random_tx, make_tx, dbprint
+from db import init_db, generate_random_tx, make_tx, dbprint
 
 os.makedirs("keys", exist_ok=True)
 
@@ -22,6 +22,9 @@ if len(sys.argv) < 2:
 	raise Exception("need key index")
 
 keyindex = sys.argv[1]
+
+init_db(keyindex)
+
 keypath = "keys/" + keyindex + ".pem"
 result = load_pem_keys(keypath)
 if result:
@@ -97,7 +100,7 @@ while True:
 					#metasignature = sign(global_private_key, b"\n".join([pubkeypem, data["signature"].encode("utf8"), datafield]))
 					targetpem, value = data["data"].split("\t")
 					value = int(value)
-					print("MAKETX:", make_tx(data["pubkey"], targetpem, value))
+					print("MAKETX:", value, make_tx(data["pubkey"], targetpem, value))
 					dbprint()
 
 
