@@ -62,8 +62,6 @@ peerlist = {}
 everysec = Every(1)
 every5sec = Every(5)
 
-consdata = randint(0, 255)
-
 def connect(path):
 	if path != txpath and path not in peerlist:
 		sub.connect(path)
@@ -86,13 +84,6 @@ while True:
 			elif typ == "peers":
 				for peer in data:
 					connect(peer)
-			elif typ == "data":
-				consdata = (consdata + data)/2
-				print(consdata)
-			#elif typ == "info":
-			#	t = time()
-			#	public_key = pem2public(data["public_key"].encode("utf8"))
-			#	print(t, public_key)
 			elif typ == "tx":
 				print("Received tx")
 				pubkeypem = data["pubkey"].encode("utf8")
@@ -126,21 +117,15 @@ while True:
 		print(f"Have {len(peerlist)} peers.")
 		print(peerlist.keys())
 
-		#pub.send_json({"type":"info", "data":{"public_key":public2pem(global_public_key).decode("utf8")}})
-
-
 		targetpem, value = generate_random_tx(public2pem(global_public_key).decode("utf8"))
 		data = targetpem + "\t" + str(value)
 		signature = sign(global_private_key, data.encode("utf8"))
 		signature = b64encode(signature).decode("utf8")
-		print(signature)
 
 		pub.send_json({"type":"tx", "data": {"pubkey": public2pem(global_public_key).decode("utf8"), "signature": signature, "data":data}})
 
 	if everysec:
 		pub.send_json({"type":"peers", "data":peerlist})
-
-		pub.send_json({"type":"data", "data":consdata})
 
 		blip(txpath)
 
