@@ -46,6 +46,11 @@ def verify(public_key, signature, data):
 def generate_private_key():
     return ec.generate_private_key(ec.SECP256K1, default_backend())
 
+def generate_keys():
+    private_key = generate_private_key()
+    public_key = private_key.public_key()
+    return private_key, public_key
+
 if __name__ == "__main__":
     private_key = generate_private_key()
     print(private_key)
